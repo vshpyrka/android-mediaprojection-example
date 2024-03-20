@@ -5,7 +5,6 @@ plugins {
 
 android {
     namespace = "com.example.mediaprojection"
-    compileSdk = 34
 
     compileSdk = sdk.versions.compileSdk.get().toInt()
 
