@@ -7,15 +7,16 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.core.view.updatePadding
 import com.example.mediaprojection.databinding.ActivityMediaProjectionBinding
 import com.google.android.material.snackbar.Snackbar
 
@@ -31,11 +32,27 @@ class MediaProjectionActivity : AppCompatActivity() {
         ::launchRecordingService
     )
 
+    private lateinit var binding: ActivityMediaProjectionBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityMediaProjectionBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        binding = ActivityMediaProjectionBinding.inflate(layoutInflater)
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars()
+                        or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.updatePadding(
+                left = bars.left,
+                top = bars.top,
+                right = bars.right,
+                bottom = bars.bottom,
+            )
+            WindowInsetsCompat.CONSUMED
+        }
+
+        setContentView(binding.root)
         binding.start.setOnClickListener {
             checkPermissionOrStartRecording()
         }
@@ -44,17 +61,26 @@ class MediaProjectionActivity : AppCompatActivity() {
             stopProjection()
         }
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-            object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent) {
-                    val path = intent.getStringExtra(MediaProjectionService.FILE_PATH)
-                    binding.videoView.setVideoPath(path)
-                    binding.videoView.isVisible = true
-                    binding.videoView.start()
-                }
-            },
-            IntentFilter(MediaProjectionService.RECORDING_COMPLETE_ACTION)
+        ContextCompat.registerReceiver(
+            this,
+            receiver,
+            IntentFilter(MediaProjectionService.RECORDING_COMPLETE_ACTION),
+            ContextCompat.RECEIVER_NOT_EXPORTED,
         )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
+    }
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val path = intent.getStringExtra(MediaProjectionService.FILE_PATH)
+            binding.videoView.setVideoPath(path)
+            binding.videoView.isVisible = true
+            binding.videoView.start()
+        }
     }
 
     private fun checkPermissionOrStartRecording() {

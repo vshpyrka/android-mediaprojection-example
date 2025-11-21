@@ -21,7 +21,6 @@ import android.view.WindowManager
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -93,10 +92,9 @@ class MediaProjectionService : Service() {
         stopRecording()
         if (mTempVideoFile != null) {
             Intent().also { intent ->
-                intent.setAction(RECORDING_COMPLETE_ACTION)
+                intent.action = RECORDING_COMPLETE_ACTION
                 intent.putExtra(FILE_PATH, mTempVideoFile?.path)
-                LocalBroadcastManager.getInstance(this)
-                    .sendBroadcast(intent)
+                sendBroadcast(intent)
             }
         }
         super.onDestroy()
