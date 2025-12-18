@@ -65,7 +65,7 @@ class MediaProjectionActivity : AppCompatActivity() {
             this,
             receiver,
             IntentFilter(MediaProjectionService.RECORDING_COMPLETE_ACTION),
-            ContextCompat.RECEIVER_NOT_EXPORTED,
+            ContextCompat.RECEIVER_EXPORTED,
         )
     }
 
