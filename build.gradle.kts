@@ -10,13 +10,8 @@ android {
 
     defaultConfig {
         minSdk = sdk.versions.minSdk.get().toInt()
-        targetSdk = sdk.versions.targetSdk.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
     }
 
     buildFeatures {
