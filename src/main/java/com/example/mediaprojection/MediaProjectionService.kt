@@ -231,6 +231,11 @@ class MediaProjectionService : Service() {
         val decoder = MediaCodec.createDecoderByType(videoType)
         val vc = decoder.codecInfo.getCapabilitiesForType(videoType).videoCapabilities
         decoder.release()
+
+        if (vc == null) {
+            return intArrayOf(screenWidth, screenHeight, newRefreshRate)
+        }
+
         // Check if we can support screen size as-is
         val width = vc.supportedWidths.upper
         val height = vc.supportedHeights.upper
